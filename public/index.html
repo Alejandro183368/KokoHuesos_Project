@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOKOHuesos - Sistema de Gestión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blanco: #ffffff;
+            --naranja: #e67e22;
+            --verde: #1a472a;
+            --amarillo: #f9ca24;
+            --oscuro: #0d1b0f;
+            --claro: #f0f4f0;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Barlow', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            background-color: #000000;
+        }
+        body::before {
+            content: '';
+            position: fixed;  
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/img/fondo.jpeg'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;    
+            opacity: 0.5;     
+            z-index: 0; /* Esto lo manda atrás de las tarjetas */
+        }
+        .container {
+            text-align: center;
+            z-index: 1;
+            padding: 15px;
+            max-width: 960px;
+            width: 100%;
+        }
+        .logo-area {
+            margin-bottom: 50px;
+            margin-top: -20px;
+
+        }
+        h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(3em, 10vw, 6em);
+            letter-spacing: 6px;
+            color: #ffffff; 
+            text-shadow: 0 0 20px rgb(0, 0, 0);
+            line-height: 1;
+        }
+        .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95em;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 36px 28px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--blanco);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            background: rgba(230,126,34,0.1);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+        .card-icon {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 16px;
+        }
+        .card-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.6em;
+            letter-spacing: 2px;
+            color: var(--amarillo);
+        }
+        .card-desc {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9em;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        .version {
+            position: fixed;
+            bottom: 15px;
+            right: 20px;
+            color: rgba(255,255,255,0.2);
+            font-size: 0.75em;
+        }
+    </style>
+<link rel="icon" type="image/png" href="/img/logo.png">
+</head>
+<body>
+    <div class="container">
+    <div class="logo-area">
+        <image src="/img/logo.png" width="330px" height="300px">
+        <h1>KOKO Huesos</h1>
+        <p class="subtitle">Bar · Ciudad Valles, S.L.P.</p>
+    </div>
+    <div class="grid">
+        <a href="/mesero" class="card">
+            <span class="card-icon">📋</span>
+            <div class="card-title">Mesero</div>
+            <p class="card-desc">Tomar comandas, seleccionar mesa y tamaño de bebida</p>
+        </a>
+        <a href="/barra" class="card">
+            <span class="card-icon">🍺</span>
+            <div class="card-title">Monitor Barra</div>
+            <p class="card-desc">Pedidos en tiempo real · Aurelio e Imelda</p>
+        </a>
+        <a href="/admin" class="card">
+            <span class="card-icon">📊</span>
+            <div class="card-title">Administración</div>
+            <p class="card-desc">Corte de caja, recibos, inventario y reportes</p>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

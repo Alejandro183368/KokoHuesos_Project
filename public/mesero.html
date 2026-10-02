@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesero - KOKOHuesos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        :root {
+            --naranja: #e67e22;
+            --verde-oscuro: #1a472a;
+            --amarillo: #f9ca24;
+            --fondo: #202124;
+            --panel: #ffffff;
+            --texto: #2c3e50;
+            --gris: #7f8c8d;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Barlow', sans-serif;
+            background: var(--fondo);
+            color: var(--texto);
+            min-height: 100vh;
+        }
+        /* HEADER */
+        .header {
+            background: #202124;
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #000000;
+           /* box-shadow: 0 2px 10px rgba(0,0,0,0.3);*/
+        }
+        .header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            color: var(--panel);
+            letter-spacing: 3px;
+            font-size: 1.4em;
+        }
+        .header a {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            font-size: 0.85em;
+        }
+        .header-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        /* LAYOUT */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            min-height: calc(100vh - 56px);
+        }
+        /* PANEL IZQUIERDO - Menú */
+        .menu-panel {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 56px);
+        }
+        /* PANEL DERECHO - Orden */
+        .orden-panel {
+            background: var(--fondo);
+            border-left: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 56px);
+            position: sticky;
+            top: 56px;
+        }
+        /* CONTROLES DE MESA Y TAMAÑO */
+        .controls {
+            padding: 15px;
+            background: #0d1b0f;
+            color: white;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .controls label {
+            font-size: 0.75em;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .controls select, .controls .tamano-btns {
+            width: 100%;
+        }
+        select {
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: none;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 0.95em;
+            width: 100%;
+        }
+        select option { background: #0d1b0f; }
+        .tamano-btns {
+            display: flex;
+            gap: 6px;
+        }
+        .btn-tamano {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn-tamano.activo {
+            background: var(--naranja);
+            border-color: var(--naranja);
+        }
+        /* CATEGORÍAS Y PRODUCTOS */
+        .categoria-header {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4em;
+            letter-spacing: 2px;
+            color: var(--naranja);
+            border-bottom: 2px solid var(--naranja);
+            padding-bottom: 6px;
+            margin: 20px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .grid-productos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px;
+        }
+        .btn-producto {
+            background: #1A1B1E;
+            border: 1px solid #2b2a2a;
+            border-radius: 10px;
+            padding: 12px 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .btn-producto:hover {
+            border-color: var(--naranja);
+            background: #e67d2283;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(230,126,34,0.2);
+        }
+        .btn-producto .nombre {
+            font-weight: 600;
+            font-size: 0.9em;
+            color: var(--texto);
+            line-height: 1.3;
+        }
+        .btn-producto .precio {
+            margin-top: 6px;
+            color: var(--naranja);
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+        .btn-producto .precio span {
+            font-size: 0.8em;
+            color: var(--gris);
+            margin-left: 4px;
+        }
+        /* ORDEN PANEL */
+        .orden-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .orden-header h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            font-size: 1.2em;
+            color: var(--texto);
+        }
+        .orden-lista {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .orden-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            background: #f8f9fa;
+            animation: slideIn 0.2s ease;
+        }
+        @keyframes slideIn {
+            from { opacity:0; transform:translateX(20px); }
+            to { opacity:1; transform:translateX(0); }
+        }
+        .orden-item-qty {
+            background: var(--naranja);
+            color: white;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85em;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .orden-item-nombre {
+            flex: 1;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        .orden-item-tamano {
+            background: #e0e0e0;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.75em;
+            color: #555;
+        }
+        .orden-item-precio {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: var(--naranja);
+        }
+        .btn-quitar {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 1em;
+            padding: 2px 5px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .btn-quitar:hover { background: #ffeaea; }
+        .orden-footer {
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .total-label {
+            font-size: 0.9em;
+            color: var(--gris);
+        }
+        .total-amount {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8em;
+            color: var(--texto);
+            letter-spacing: 1px;
+        }
+        .btn-enviar {
+            width: 100%;
+            padding: 10px;
+            background: var(--verde-oscuro);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        .btn-enviar:hover { background: #27ae60; transform: translateY(-1px); }
+        .btn-enviar:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn-limpiar {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+        .btn-limpiar:hover { background: #ffeaea; }
+        .notif {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        .buscador {
+            margin-bottom: 15px;
+        }
+        .buscador input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #595959;
+            border-radius: 8px;
+            font-size: 0.95em;
+            background: var(--fondo);
+        }
+        .buscador input:focus {
+            outline: none;
+            border-color: var(--naranja);
+        }
+        .orden-vacia {
+            text-align: center;
+            color: var(--gris);
+            padding: 40px 20px;
+            font-size: 0.9em;
+        }
+        .orden-vacia .icon { font-size: 3em; display: block; margin-bottom: 10px; }
+        /* Badge en categoría */
+        .cat-icon { font-size: 0.9em; }
+        /* Mobile */
+        @media (max-width: 760px) {
+            .layout { grid-template-columns: 1fr; }
+            .orden-panel { position: fixed; bottom: 0; left: 0; right: 0; height: auto; max-height: 50vh; z-index: 50; border-top: 2px solid var(--naranja); }
+            .menu-panel { padding-bottom: 220px; }
+        }
+        ::-webkit-scrollbar {
+            width: 5px; /* Ancho de la barra vertical */
+            height: 5px; /* Alto de la barra horizontal */
+        }
+        ::-webkit-scrollbar-track {
+            background: #1A1B1E; /* El color oscuro que ya usamos */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #444; /* Un gris intermedio */
+            border-radius: 10px; /* Bordes redondeados para que se vea moderna */
+            border: 2px solid #1A1B1E; /* Crea un efecto de separación */
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ffa500; /* Puedes usar tu naranja de acento aquí */
+        }
+    </style>
+    <link rel="icon" type="image/png" href="/img/logo.png">
+</head>
+<body>
+
+<div class="header">
+    <a href="/"><image src="/img/logo.png" width="50px" height="50px"></a>
+    <h1>KOKOHuesos — Mesero</h1>
+</div>
+
+<div class="layout">
+    <!-- PANEL MENÚ -->
+    <div class="menu-panel">
+        <div class="buscador">
+            <input type="text" id="buscador" placeholder="🔍 Buscar bebida..." oninput="filtrarProductos(this.value)">
+        </div>
+        <div id="menu-container">
+            <div style="text-align:center;padding:40px;color:#999;">Cargando menú...</div>
+        </div>
+    </div>
+
+    <!-- PANEL ORDEN -->
+    <div class="orden-panel">
+        <div class="controls">
+            <div>
+                <label>Mesa</label>
+                <select id="mesa-select" onchange="actualizarMesa()">
+                    <option value="">-- Seleccionar --</option>
+                    <!-- 20 mesas -->
+                    <option value="1">Mesa 1</option>
+                    <option value="2">Mesa 2</option>
+                    <option value="3">Mesa 3</option>
+                    <option value="4">Mesa 4</option>
+                    <option value="5">Mesa 5</option>
+                    <option value="6">Mesa 6</option>
+                    <option value="7">Mesa 7</option>
+                    <option value="8">Mesa 8</option>
+                    <option value="9">Mesa 9</option>
+                    <option value="10">Mesa 10</option>
+                    <option value="11">Mesa 11</option>
+                    <option value="12">Mesa 12</option>
+                    <option value="13">Mesa 13</option>
+                    <option value="14">Mesa 14</option>
+                    <option value="15">Mesa 15</option>
+                    <option value="16">Mesa 16</option>
+                    <option value="17">Mesa 17</option>
+                    <option value="18">Mesa 18</option>
+                    <option value="19">Mesa 19</option>
+                    <option value="20">Mesa 20</option>
+                    <option value="Barra">Barra</option>
+                </select>
+            </div>
+            <div>
+                <label>Tamaño</label>
+                <div class="tamano-btns">
+                    <button class="btn-tamano activo" id="btn-medio" onclick="setTamano('medio')">½ Litro</button>
+                    <button class="btn-tamano" id="btn-litro" onclick="setTamano('litro')">1 Litro</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="orden-header">
+            <h3>🛒 Orden actual <span id="mesa-label" style="color:var(--naranja);"></span></h3>
+        </div>
+
+        <div class="orden-lista" id="orden-lista">
+            <div class="orden-vacia">
+                <span class="icon">🍹</span>
+                Selecciona mesa y bebidas del menú
+            </div>
+        </div>
+
+        <div class="orden-footer">
+            <div id="notificacion"></div>
+            <div class="total-row">
+                <span class="total-label">TOTAL ESTIMADO</span>
+                <span class="total-amount" id="total-display">$0</span>
+            </div>
+            <form id="form-comanda" onsubmit="enviarComanda(event)">
+                <input type="hidden" name="mesa" id="input-mesa">
+                <input type="hidden" name="items" id="input-items">
+                <button type="submit" class="btn-enviar" id="btn-enviar" disabled>
+                    Enviar a Barra
+                </button>
+            </form>
+            <button class="btn-limpiar" onclick="resetear()">🗑 Limpiar orden</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let carrito = [];
+let tamanoActual = 'medio';
+let mesaActual = '';
+let todosProductos = [];
+
+const CAT_ICONS = {
+    'Cócteles Clásicos': '🍹',
+    'Tragos Tropicales': '🌴',
+    'Especialidades': '⭐',
+    'Brandys': '🥃',
+    'Rones': '🦜',
+    'Vodkas': '❄️',
+    'Tequilas': '🌵',
+    'Whiskys': '🥃',
+    'Cervezas': '🍺'
+};
+
+// Cargar menú
+fetch('/productos')
+    .then(r => r.json())
+    .then(productos => {
+        todosProductos = productos;
+        renderMenu(productos);
+    });
+
+function renderMenu(productos) {
+    const container = document.getElementById('menu-container');
+    const categorias = {};
+    productos.forEach(p => {
+        if (!categorias[p.categoria]) categorias[p.categoria] = [];
+        categorias[p.categoria].push(p);
+    });
+
+    let html = '';
+    for (const [cat, items] of Object.entries(categorias)) {
+        const icon = CAT_ICONS[cat] || '🍸';
+        html += `<div class="categoria-header"><span class="cat-icon">${icon}</span>${cat}</div>`;
+        html += '<div class="grid-productos">';
+        items.forEach(p => {
+            const precioMedio = p.precio_medio > 0 ? `$${p.precio_medio.toFixed(0)}` : 'Precio';
+            const precioLitro = p.precio_litro > 0 ? ` / $${p.precio_litro.toFixed(0)}` : '';
+            html += `
+                <button class="btn-producto" onclick="agregarItem(${p.id}, '${escHtml(p.nombre)}', ${p.precio_medio}, ${p.precio_litro})">
+                    <div class="nombre">${p.nombre}</div>
+                    <div class="precio">${precioMedio}<span>${precioLitro}</span></div>
+                </button>`;
+        });
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
+function escHtml(str) {
+    return str.replace(/'/g, "\\'");
+}
+
+function filtrarProductos(q) {
+    if (!q.trim()) { renderMenu(todosProductos); return; }
+    const filtrados = todosProductos.filter(p => p.nombre.toLowerCase().includes(q.toLowerCase()));
+    renderMenu(filtrados);
+}
+
+function setTamano(t) {
+    tamanoActual = t;
+    document.getElementById('btn-medio').classList.toggle('activo', t === 'medio');
+    document.getElementById('btn-litro').classList.toggle('activo', t === 'litro');
+}
+
+function actualizarMesa() {
+    mesaActual = document.getElementById('mesa-select').value;
+    document.getElementById('input-mesa').value = mesaActual;
+    const label = mesaActual ? `· Mesa ${mesaActual}` : '';
+    document.getElementById('mesa-label').textContent = label;
+    actualizarBoton();
+}
+
+function agregarItem(id, nombre, precioMedio, precioLitro) {
+    if (!mesaActual) {
+        mostrarNotif('⚠️ Selecciona una mesa primero', '#e74c3c');
+        document.getElementById('mesa-select').focus();
+        return;
+    }
+    const precio = tamanoActual === 'litro' ? precioLitro : precioMedio;
+    const key = `${id}_${tamanoActual}`;
+    const existe = carrito.find(i => i.key === key);
+    if (existe) {
+        existe.cantidad++;
+    } else {
+        carrito.push({ key, id, nombre, tamano: tamanoActual, precio, cantidad: 1 });
+    }
+    renderCarrito();
+}
+
+function quitarItem(key) {
+    const idx = carrito.findIndex(i => i.key === key);
+    if (idx === -1) return;
+    carrito[idx].cantidad--;
+    if (carrito[idx].cantidad <= 0) carrito.splice(idx, 1);
+    renderCarrito();
+}
+
+function renderCarrito() {
+    const lista = document.getElementById('orden-lista');
+    if (carrito.length === 0) {
+        lista.innerHTML = `<div class="orden-vacia"><span class="icon">🍹</span>Selecciona bebidas del menú</div>`;
+        document.getElementById('total-display').textContent = '$0';
+        actualizarBoton();
+        return;
+    }
+
+    let total = 0;
+    let html = '';
+    carrito.forEach(item => {
+        const sub = item.precio * item.cantidad;
+        total += sub;
+        const tamLabel = item.tamano === 'litro' ? '1L' : '½L';
+        html += `<div class="orden-item">
+            <span class="orden-item-qty">${item.cantidad}</span>
+            <span class="orden-item-nombre">${item.nombre}</span>
+            <span class="orden-item-tamano">${tamLabel}</span>
+            <span class="orden-item-precio">$${sub.toFixed(0)}</span>
+            <button class="btn-quitar" onclick="quitarItem('${item.key}')">✕</button>
+        </div>`;
+    });
+
+    lista.innerHTML = html;
+    document.getElementById('total-display').textContent = `$${total.toFixed(0)}`;
+    document.getElementById('input-items').value = JSON.stringify(carrito.map(i => ({
+        id: i.id, nombre: i.nombre, cantidad: i.cantidad, tamano: i.tamano
+    })));
+    actualizarBoton();
+}
+
+function actualizarBoton() {
+    const btn = document.getElementById('btn-enviar');
+    btn.disabled = !(mesaActual && carrito.length > 0);
+}
+
+function enviarComanda(e) {
+    e.preventDefault();
+    const form = document.getElementById('form-comanda');
+    const data = new FormData(form);
+    
+    fetch('/venta/registrar-comanda', { method: 'POST', body: data })
+        .then(r => r.text())
+        .then(html => {
+            mostrarNotif('✅ Orden enviada a barra', '#27ae60');
+            resetear();
+        })
+        .catch(() => mostrarNotif('❌ Error al enviar', '#e74c3c'));
+}
+
+function resetear() {
+    carrito = [];
+    renderCarrito();
+}
+
+function mostrarNotif(msg, color) {
+    const el = document.getElementById('notificacion');
+    el.innerHTML = `<div class="notif" style="background:${color};color:white;">${msg}</div>`;
+    setTimeout(() => { el.innerHTML = ''; }, 3000);
+}
+
+// Inicializar
+actualizarMesa();
+</script>
+</body>
+</html>

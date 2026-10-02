@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración - KOKOHuesos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        :root {
+            --naranja: #e67e22;
+            --verde: #27ae60;
+            --azul: #2980b9;
+            --oscuro: #202124;
+            --amarillo: #e67e22;
+            --rojo: #e74c3c;
+            --fondo: #202124;
+            --panel: #202124;
+            --texto: #ffffff;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Barlow', sans-serif;
+            background: var(--fondo);
+            color: var(--texto);
+            min-height: 100vh;
+        }
+        /* HEADER */
+        .header {
+            background: var(--oscuro);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+        }
+        .header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            color: var(--texto);
+            letter-spacing: 4px;
+            font-size: 1.4em;
+        }
+        /* TABS */
+        .tabs {
+            background: #202124;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+        }
+        .tab {
+            padding: 14px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-family: 'Barlow', sans-serif;
+            font-size: 0.95em;
+            font-weight: 600;
+            color: var(--texto);
+            opacity: 0.5;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .tab.activa {
+            opacity: 1;
+            border-bottom-color: var(--naranja);
+            color: var(--naranja);
+        }
+        .tab:hover { opacity: 0.8; }
+        /* CONTENT */
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .seccion { display: none; }
+        .seccion.activa { display: block; }
+        /* CARDS */
+        .card {
+            background: var(--fondo);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e8e8e8;
+        }
+        .card h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            font-size: 1.2em;
+            color: var(--texto);
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--naranja);
+            padding-bottom: 8px;
+        }
+        /* GRID MESAS */
+        .grid-mesas {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+        }
+        .btn-mesa {
+            padding: 16px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #1A1B1E;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            font-weight: 700;
+            font-size: 0.95em;
+            color: var(--texto);
+            transition: all 0.2s;
+            text-align: center;
+            position: relative;
+        }
+        .btn-mesa:hover {
+            border-color: #ffffff;
+            background: var(--verde);
+            transform: translateY(-2px);
+        }
+        .btn-mesa.ocupada {
+            border-color: var(--naranja);
+            background: #fff5ee;
+        }
+        .btn-mesa.ocupada::after {
+            content: '●';
+            position: absolute;
+            top: 5px; right: 8px;
+            color: var(--naranja);
+            font-size: 0.7em;
+        }
+        /* BOTONES */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.2s;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-azul { background: var(--azul); color: white; }
+        .btn-verde { background: var(--verde); color: white; }
+        .btn-rojo { background: var(--rojo); color: white; }
+        .btn-naranja { background: var(--naranja); color: white; }
+        .btn-gris { background: #95a5a6; color: white; }
+        /* VISOR */
+        #visor {
+            min-height: 80px;
+            transition: all 0.3s;
+        }
+        /* INVENTARIO */
+        .alerta-banner {
+            background: var(--oscuro);
+            border: 1px solid #e74c3c;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            color: #c0392b;
+            font-weight: 600;
+            display: none;
+        }
+        /* FORMULARIO RECARGA */
+        .form-recarga {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+            margin-top: 15px;
+        }
+        .form-recarga label {
+            font-size: 0.8em;
+            color: var(--texto);
+            
+            opacity: 0.7;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .form-recarga select, .form-recarga input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95em;
+            color: var(--texto);
+            background-color:#1A1B1E;
+        }
+        /* REPORTE */
+        .reporte-btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        /* PELIGRO */
+        .zona-peligro {
+            border: 2px dashed var(--rojo);
+            border-radius: 10px;
+            padding: 20px;
+            background: #fff5f5;
+        }
+    </style>
+    <link rel="icon" type="image/png" href="/img/logo.png">
+
+</head>
+<body>
+
+<div class="header">
+    <a href="/"><image src="/img/logo.png" width="50px" height="50px"></a>
+    <h1>KOKOHuesos — Admin</h1>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+    <button class="tab activa" onclick="mostrarTab('mesas', this)">🏠 Mesas</button>
+    <button class="tab" onclick="mostrarTab('inventario', this)">📦 Inventario</button>
+    <button class="tab" onclick="mostrarTab('reportes', this)">📈 Reportes</button>
+    <button class="tab" onclick="mostrarTab('turno', this)">🌙 Turno</button>
+</div>
+
+<div class="content">
+
+    <!-- ===== TAB MESAS ===== -->
+    <div id="tab-mesas" class="seccion activa">
+        <div class="card">
+            <h3>🏠 Estado de Mesas</h3>
+            <div class="grid-mesas" id="grid-mesas">
+                <!-- 20 mesas generadas por JS -->
+            </div>
+        </div>
+
+        <div class="card" id="visor-card" style="display:none;">
+            <div id="visor"></div>
+        </div>
+    </div>
+
+    <!-- ===== TAB INVENTARIO ===== -->
+    <div id="tab-inventario" class="seccion">
+        <div class="card">
+            <h3>📦 Existencias Actuales</h3>
+            <div id="alerta-inventario" class="alerta-banner">
+                🚨 Hay productos en estado crítico. Revisar stock inmediatamente.
+            </div>
+            <div id="lista-inventario"
+                 hx-get="/admin/inventario"
+                 hx-trigger="load, every 60s">
+                <div style="text-align:center;padding:30px;color:var(--oscuro);">Cargando inventario...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📥 Registrar Entrada de Mercancía</h3>
+            <p style="color:#7f8c8d;font-size:0.9em;margin-bottom:10px;">Selecciona el producto y la cantidad a agregar al stock.</p>
+            <form hx-post="/admin/inventario/recargar" hx-target="#lista-inventario" class="form-recarga">
+                <div>
+                    <label>Producto</label>
+                    <select name="insumo_id">
+                        <option value="1">Cerveza Corona</option>
+                        <option value="2">Cerveza Modelo</option>
+                        <option value="3">Cerveza Pacifico</option>
+                        <option value="4">Mezclador</option>
+                        <option value="5">Clamato</option>
+                        <option value="6">Sal/Limón/Chile</option>
+                        <option value="7">Tequila Centenario</option>
+                        <option value="8">Tequila Tradicional</option>
+                        <option value="9">Tequila Cristalino</option>
+                        <option value="10">Herradura Plata</option>
+                        <option value="11">Maestro Dobel</option>
+                        <option value="12">Don Julio 70</option>
+                        <option value="13">Vodka Absolut</option>
+                        <option value="14">Vodka Stoli</option>
+                        <option value="15">Torres 5</option>
+                        <option value="16">Torres 10</option>
+                        <option value="17">Ron Flor de Caña</option>
+                        <option value="18">Ron Appleton Estate</option>
+                        <option value="19">Ron Bacardi Blanco</option>
+                        <option value="20">Ron Potosí Añejo</option>
+                        <option value="21">Ron Potosí Extra Añejo</option>
+                        <option value="22">Whisky Buchanans</option>
+                        <option value="23">Whisky Red Label</option>
+                        <option value="24">Whisky Black Label</option>
+                        <option value="25">Jack Daniels</option>
+                        <option value="26">Whisky Bailes</option>
+                        <option value="27">Jugo de Piña</option>
+                        <option value="28">Jugo de Fresa</option>
+                        <option value="29">Hielo</option>
+                        <option value="30">Vasos/Copas</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Cantidad a agregar</label>
+                    <input type="number" name="cantidad" placeholder="Ej: 24" min="1" required>
+                </div>
+                <button type="submit" class="btn btn-verde" style="margin:0;">+ Agregar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== TAB REPORTES ===== -->
+    <div id="tab-reportes" class="seccion">
+        <div class="card">
+            <h3>📈 Análisis de Ventas</h3>
+            <div class="reporte-btns">
+                <button class="btn btn-azul" hx-get="/admin/reporte?periodo=hoy" hx-target="#reporte-visor">Ventas de Hoy</button>
+                <button class="btn btn-naranja" hx-get="/admin/reporte?periodo=semana" hx-target="#reporte-visor">Últimos 7 Días</button>
+                <button class="btn btn-verde" hx-get="/admin/reporte?periodo=mes" hx-target="#reporte-visor">Este Mes</button>
+            </div>
+            <div id="reporte-visor" style="min-height:100px;">
+                <div style="text-align:center;color:#999;padding:30px;">Selecciona un período para ver el reporte</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TAB TURNO ===== -->
+    <div id="tab-turno" class="seccion">
+        <div class="card">
+            <h3>🌙 Cierre de Turno</h3>
+            <p style="color:#7f8c8d;margin-bottom:20px;">
+                Usa estas opciones al final del turno o cuando sea necesario gestionar el cierre de caja.
+            </p>
+
+            <div class="zona-peligro">
+                <h4 style="color:var(--rojo);margin-bottom:10px;">⚠️ Zona de Cierres</h4>
+                <p style="font-size:0.9em;color:#666;margin-bottom:15px;">
+                    Al finalizar el día, todos los pedidos servidos pendientes de cobro se archivarán como pagados.
+                </p>
+                <button class="btn btn-rojo"
+                        hx-post="/admin/finalizar-dia"
+                        hx-target="#resultado-turno"
+                        hx-confirm="¿Seguro? Esto archivará todos los pedidos servidos.">
+                    🌙 Finalizar Turno del Día
+                </button>
+                <div id="resultado-turno" style="margin-top:15px;"></div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /content -->
+
+<script>
+function mostrarTab(id, btn) {
+    document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('activa'));
+    document.getElementById('tab-' + id).classList.add('activa');
+    btn.classList.add('activa');
+}
+
+// Generar grid de 20 mesas
+function generarMesas() {
+    const grid = document.getElementById('grid-mesas');
+    let html = '';
+    for (let i = 1; i <= 20; i++) {
+        html += `<button class="btn-mesa" id="mesa-btn-${i}" onclick="verRecibo('${i}')">
+            <div style="font-size:1.2em;margin-bottom:4px;">🪑</div>
+            Mesa ${i}
+        </button>`;
+    }
+    html += `<button class="btn-mesa" id="mesa-btn-Barra" onclick="verRecibo('Barra')">
+        <div style="font-size:1.2em;margin-bottom:4px;">🍺</div>
+        Barra
+    </button>`;
+    grid.innerHTML = html;
+}
+
+function verRecibo(mesa) {
+    document.getElementById('visor-card').style.display = 'block';
+    document.getElementById('visor').innerHTML = '<div style="text-align:center;padding:20px;color:#999;">Cargando cuenta...</div>';
+    document.getElementById('visor-card').scrollIntoView({ behavior: 'smooth' });
+
+    fetch(`/admin/recibo/${mesa}`)
+        .then(r => r.text())
+        .then(html => {
+            document.getElementById('visor').innerHTML = html;
+            htmx.process(document.getElementById('visor'));
+        });
+}
+
+// Actualizar estado de mesas cada 10s
+function actualizarEstadoMesas() {
+    fetch('/admin/mesas')
+        .then(r => r.json())
+        .then(mesas => {
+            for (let i = 1; i <= 20; i++) {
+                const btn = document.getElementById(`mesa-btn-${i}`);
+                if (!btn) continue;
+                if (mesas[String(i)]) {
+                    btn.classList.add('ocupada');
+                    btn.title = `${mesas[String(i)].items} item(s) pendientes`;
+                } else {
+                    btn.classList.remove('ocupada');
+                    btn.title = '';
+                }
+            }
+            // Check alerta inventario
+        });
+}
+
+// Check alertas en inventario
+document.body.addEventListener('htmx:afterSwap', (e) => {
+    if (e.detail.target.id === 'lista-inventario') {
+        const critico = e.detail.target.querySelector('[style*="#ffeaea"]');
+        const banner = document.getElementById('alerta-inventario');
+        if (banner) banner.style.display = critico ? 'block' : 'none';
+    }
+});
+
+generarMesas();
+actualizarEstadoMesas();
+setInterval(actualizarEstadoMesas, 10000);
+</script>
+
+</body>
+</html>

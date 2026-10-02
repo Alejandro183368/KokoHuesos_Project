@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Barra - KOKOHuesos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        :root {
+            --naranja: #e67e22;
+            --verde: #27ae60;
+            --oscuro: #0d1b0f;
+            --amarillo: #f9ca24;
+            --texto:  #ffffff;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Barlow', sans-serif;
+            background: #202124;
+            color: white;
+            min-height: 100vh;
+        }
+        .header {
+            background: #202124;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 3px solid var(--naranja);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            color: var(--texto);
+            letter-spacing: 4px;
+            font-size: 1.5em;
+        }
+        .header-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .live-dot {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8em;
+            color: rgba(255,255,255,0.5);
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--verde);
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+        .header a {
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 0.85em;
+        }
+        /* GRID DE COMANDAS */
+        #contenedor-pedidos {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            align-items: start;
+            min-height: calc(100vh - 90px);
+        }
+        /* Styles for cards injected via HTMX are in main.go HTML */
+        /* Override card styles for dark theme */
+        #contenedor-pedidos > div {
+            font-family: 'Barlow', sans-serif !important;
+        }
+        .timestamp {
+            font-size: 0.75em;
+            opacity: 0.5;
+            text-align: right;
+            padding-right: 24px;
+            padding-top: 4px;
+        }
+    </style>
+        <link rel="icon" type="image/png" href="/img/logo.png">
+
+</head>
+<body>
+
+<div class="header">
+    <a href="/"><image src="/img/logo.png" width="50px" height="50px"></a>
+    <h1>Monitor de Barra</h1>
+    <div class="header-right">
+        <div class="live-dot">
+            <div class="dot"></div>
+            <span>Actualizando cada 3s</span>
+        </div>
+    </div>
+</div>
+
+<div id="contenedor-pedidos"
+     hx-get="/barra/pedidos"
+     hx-trigger="every 3s, load"
+     hx-swap="innerHTML">
+</div>
+
+<div class="timestamp" id="last-update"></div>
+
+<script>
+    document.body.addEventListener('htmx:afterSwap', () => {
+        const now = new Date().toLocaleTimeString('es-MX');
+    });
+</script>
+
+</body>
+</html>
